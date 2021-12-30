@@ -6,8 +6,8 @@ This application is for scoring bowling
 
 ## Rules
 * https://en.wikipedia.org/wiki/Ten-pin_bowling#Traditional_scoring
-* 10 squares per game
-* One or two rolls per square
+* 10 frames per game
+* One or two rolls per frame
   * Strike = knock all 10 down on first roll
   * Spare = knock all 10 down in two rolls
   * Open Frame = Two rolls and less then 10 pins
