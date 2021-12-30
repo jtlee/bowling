@@ -5,8 +5,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ * Bowling scoring app
+ * Run {@link #main(String[])} will run a command line app that prompts a single user for each roll and prints out
+ * the status of the game.
+ */
 public class Bowling {
 
+    /**
+     * One of 10 frames in a bowling game
+     */
     static class Frame {
         final Game game;
         final int frameIdx;
@@ -20,14 +28,25 @@ public class Bowling {
             this.frameIdx = frameIdx;
         }
 
+        /**
+         * @return true if the first roll is 10 pins
+         */
         boolean isStrike() {
             return firstRoll == 10;
         }
 
+        /**
+         * @return true if its not a strike, and the first and second rolls add up to 10 pins.
+         */
         boolean isSpare() {
             return !isStrike() && firstRoll + secondRoll == 10;
         }
 
+        /**
+         * @return On all frames except the bowler gets one two attempts to knock down all 10 pins.
+         * On the 10th frame the bowler gets two extra rolls if the first is a strike, and one extra roll if
+         * they roll a spare.
+         */
         boolean canRoll() {
             if (rolls == 0) {
                 return true;
@@ -38,10 +57,25 @@ public class Bowling {
             }
         }
 
+        /**
+         * @return The following are "totalable":
+         * Open (two rolls have been taken and less than 10 pins knocked down).
+         * Strike and next two rolls have been taken
+         * Spare and next one roll has been taken
+         */
         boolean canTotal() {
             return total() != -1;
         }
 
+        /**
+         * @return
+         * Open = roll1 + roll2
+         * Spare = roll1 + roll2 + next roll (either first from next frame, or a bonus roll on the 10th frame)
+         * Strike = 10 + next two rolls (may be any one of:
+         * 1) Next frame first and second rolls (first not being a strike)
+         * 2) Next frame first roll (also a strike) + next-next frame first roll
+         * 3) Or two bonus rolls on the 10th frame
+         */
         int total() {
             if (canRoll()) {
                 return -1;
@@ -78,10 +112,19 @@ public class Bowling {
             }
         }
 
+        /**
+         * @return Next frame. Throws {@link IndexOutOfBoundsException} on the 10th frame.
+         */
         Frame nextFrame() {
             return game.frames[frameIdx + 1];
         }
 
+        /**
+         * Records the score
+         * @param score between 1 and 10 pins.
+         *              Throws {@link IllegalStateException} if this frame has already been rolled and {@link #canRoll()} is false.
+         *              Throws {@link IllegalArgumentException} if score is < 0 or > 10, or if the total > 10 and this is not a bonus roll.
+         */
         void score(int score) {
             if (!canRoll()) {
                 throw new IllegalStateException("No more rolls allowed in this frame");
@@ -167,6 +210,28 @@ public class Bowling {
         singlePlayerGame(System.in, System.out);
     }
 
+    static void singlePlayerGame(InputStream in, Appendable out) {
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            Player p = null;
+            while (p == null) {
+                p = newPlayer(br, out);
+            }
+
+            while (!p.game.isGameOver()) {
+                playerTakeTurn(p, br, out);
+            }
+
+            out.append("Game Over\n");
+        } catch (IOException e) {
+            try {
+                out.append("Game error");
+                e.printStackTrace();
+                System.exit(1);
+            } catch (Exception ignore) {}
+        }
+    }
+
     static int getPins(Player p, BufferedReader in, Appendable out) throws IOException {
         Frame f = p.game.currentFrame();
         out.append("Player: " + p.name +
@@ -192,16 +257,6 @@ public class Bowling {
         }
     }
 
-    static Player newPlayer(BufferedReader in, Appendable out) throws IOException {
-        out.append("Enter the players name and press enter...    ");
-        String name = in.readLine();
-        if (name == null || name.isEmpty()) {
-            out.append("Name must not be empty");
-            return null;
-        }
-        return new Player(name);
-    }
-
     static void playerTakeTurn(Player p, BufferedReader in, Appendable out) throws IOException {
         Frame f = p.game.nextFrame();
         while (f.canRoll()) {
@@ -213,26 +268,14 @@ public class Bowling {
         }
     }
 
-    static void singlePlayerGame(InputStream in, Appendable out) {
-        try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            Player p = null;
-            while (p == null) {
-                p = newPlayer(br, out);
-            }
-
-            while (!p.game.isGameOver()) {
-                playerTakeTurn(p, br, out);
-            }
-
-            out.append("Game Over\n");
-        } catch (IOException e) {
-            try {
-                out.append("Game error");
-                e.printStackTrace();
-                System.exit(1);
-            } catch (Exception ignore) {}
+    static Player newPlayer(BufferedReader in, Appendable out) throws IOException {
+        out.append("Enter the players name and press enter...    ");
+        String name = in.readLine();
+        if (name == null || name.isEmpty()) {
+            out.append("Name must not be empty");
+            return null;
         }
+        return new Player(name);
     }
 
     final static int NAME_COL_W = 10;
@@ -337,9 +380,5 @@ public class Bowling {
                 break;
         }
     }
-
-
-
-
 
 }

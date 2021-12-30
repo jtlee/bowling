@@ -40,3 +40,12 @@ This application is for scoring bowling
 3. After each player has a turn, play starts over with the first player on the next frame. 
 4. After the 10th frame, the game is over.
 5. The player with the most points wins.
+
+## Future Improvements
+1. Multiple players
+2. Multiple concurrent games
+3. Add more tests for user input
+4. Different kinds of user input and output e.g. a web GUI
+5. Score record keeping
+6. Support for player handicap
+7. Different style scoring (e.g. world bowling scoring)
